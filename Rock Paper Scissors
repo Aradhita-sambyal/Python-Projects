@@ -1,0 +1,36 @@
+user =input("Choose one ->\n"
+            "1: Rock\n" \
+            "2: Paper\n" \
+            "3: scissors\n")
+
+import random
+n= random.randint(1,3)
+
+comp_dict = {1: "Rock",
+             2: "Paper",
+             3: "Scissors"}
+
+print(f"You choose: {user}\nComputer choose: {comp_dict[n]} ")
+if user =="Rock":
+    if n==1:
+        print("It's a tie")
+    elif n==2:
+        print ("You lose")
+    elif n==3:
+        print("You won")
+
+if user =="Paper":
+    if n==1:
+        print("You won")
+    elif n==2:
+        print("It's a tie")
+    elif n==3:
+        print ("You lose")
+
+if user =="Scissors":
+    if n==1:
+        print ("You lose")
+    elif n==2:
+        print("You won")
+    elif n==3:
+        print("It's a tie")
