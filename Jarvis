@@ -1,0 +1,109 @@
+import speech_recognition as sr 
+import webbrowser
+import pyttsx3
+import time
+import pywhatkit as kit
+import datetime
+import os
+import requests
+import pyjokes
+import wikipedia
+
+r=sr.Recognizer()
+news_key = "24dc94795c754a6291e91b5f30e62cb6"
+
+def speak(text):
+    engine = pyttsx3.init() 
+    engine.say(text)
+    engine.runAndWait()
+    engine.stop()
+
+def play_youtube(song):
+    kit.playonyt(song)
+
+def log_complaint(text):
+    with open("complaints.txt", "a") as f:
+        f.write(text + "\n")
+
+def process_command(c):
+    c = c.lower()
+    complaint_words = ["bad", "issue", "problem", "not working", "worst", "poor"]
+
+    if any(word in c for word in complaint_words):
+        speak("Your issue has been noted. We will look into it.")
+        log_complaint(c)
+        return
+    if "open google" in c():
+        webbrowser.open("https://google.com")
+    elif "open youtube" in c():
+        webbrowser.open("https://youtube.com")
+    elif "open linkedin" in c():
+        webbrowser.open("https://in.linkedin.com")
+    elif "play" in c:
+        song = c.replace("play", "").strip()
+        speak(f"Playing {song} on YouTube")
+        play_youtube(song)
+
+    elif "time" in c():
+        now = datetime.datetime.now()
+        speak(f"The time is {now.hour} {now.minute}")
+
+    elif c().startswith("start"):
+        query = c().split()[1]
+        os.system(f"start {query}")
+    elif "joke" in c():
+        speak(pyjokes.get_joke())
+
+    elif "news" in c:
+        url = f"https://newsapi.org/v2/top-headlines?country=in&apiKey={news_key}"
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            data = response.json()
+            articles = data.get('articles', [])
+
+            if not articles:
+                speak("Sorry, I could not find any news.")
+            else:
+                speak("Here are top news of the day")
+                for article in articles[:5]:
+                    speak(article.get("title", ""))
+                    time.sleep(1)
+    else:
+        try:
+            query = c.replace("tell me about", "").strip()
+            result = wikipedia.summary(query, sentences=2)
+            speak(result)
+        except wikipedia.exceptions.DisambiguationError:
+            speak("Please be more specific.")
+        except wikipedia.exceptions.PageError:
+            speak("I could not find anything on Wikipedia.")
+        except Exception:
+            speak("Something went wrong.")
+
+if __name__ == "__main__":
+    speak("Initializing Jarvis ......")
+
+    while(True):
+        
+        print("Recognizing....")
+        try:
+            with sr.Microphone() as source:
+                print ("Listening....")
+                r.adjust_for_ambient_noise(source, duration=1)
+                audio = r.listen(source)
+            word =r.recognize_google(audio)
+            print(word)
+            if "Jarvis" in word.lower():
+                speak("Jarvis Activated")
+                time.sleep(0.5)
+
+                with sr.Microphone() as source:
+                    print ("Listening....")
+                    audio = r.listen(source)
+
+                command =r.recognize_google(audio)
+                process_command(command)
+
+        except Exception as e:
+            print("Error:", e)
